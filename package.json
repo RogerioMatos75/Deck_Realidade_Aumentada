@@ -1,0 +1,11 @@
+{
+  "name": "deck-realidade-aumentada",
+  "version": "1.0.0",
+  "description": "Visualizador de Realidade Aumentada com personagens 3D",
+  "scripts": {
+    "generate-qr": "node js/qr-generator.js"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.3"
+  }
+}
