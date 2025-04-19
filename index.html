@@ -92,7 +92,13 @@
         video.setAttribute('playsinline', true);
         video.style.transform = 'rotate(0deg)';
 
-        mediaRecorder = new MediaRecorder(stream);
+        const options = { mimeType: 'video/mp4;codecs=h264,aac' };
+        try {
+          mediaRecorder = new MediaRecorder(stream, options);
+        } catch (e) {
+          console.warn('MediaRecorder com MP4 não suportado, usando formato padrão');
+          mediaRecorder = new MediaRecorder(stream);
+        }
 
         mediaRecorder.ondataavailable = event => {
           if (event.data.size > 0) {
@@ -101,14 +107,16 @@
         };
 
         mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `ar-video-${Date.now()}.webm`;
+          a.download = `ar-video-${Date.now()}.mp4`;
           a.click();
           recordedChunks = [];
         };
+
+        mediaRecorder.start(1000);
       })
       .catch(err => {
         console.error("Erro ao acessar câmera:", err);
@@ -129,14 +137,13 @@
       link.click();
     }
 
-    const recordBtn = document.getElementById('recordButton');
-
-    recordBtn.addEventListener('click', () => {
+    function gravarVideo() {
       if (!isRecording) {
         try {
           mediaRecorder.start();
-          recordBtn.textContent = "⏹️ Parar Gravação";
-          recordBtn.classList.add('recording');
+          const btnGravar = document.querySelector('.btn:last-child');
+          btnGravar.textContent = "⏹️ Parar Gravação";
+          btnGravar.classList.add('recording');
           isRecording = true;
         } catch (err) {
           console.error("Erro ao iniciar gravação:", err);
@@ -144,8 +151,9 @@
         }
       } else {
         mediaRecorder.stop();
-        recordBtn.textContent = "🎥 Gravar Vídeo";
-        recordBtn.classList.remove('recording');
+        const btnGravar = document.querySelector('.btn:last-child');
+        btnGravar.textContent = "🎥 Gravar Vídeo";
+        btnGravar.classList.remove('recording');
         isRecording = false;
       }
     });
