@@ -92,12 +92,12 @@
         video.setAttribute('playsinline', true);
         video.style.transform = 'rotate(0deg)';
 
-        const options = { mimeType: 'video/mp4;codecs=h264,aac' };
         try {
-          mediaRecorder = new MediaRecorder(stream, options);
-        } catch (e) {
-          console.warn('MediaRecorder com MP4 não suportado, usando formato padrão');
           mediaRecorder = new MediaRecorder(stream);
+        } catch (e) {
+          console.error('Erro ao criar MediaRecorder:', e);
+          alert('Seu navegador não suporta gravação de vídeo.');
+          return;
         }
 
         mediaRecorder.ondataavailable = event => {
@@ -107,21 +107,21 @@
         };
 
         mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `ar-video-${Date.now()}.mp4`;
+          a.download = `ar-video-${Date.now()}.webm`;
           a.click();
           recordedChunks = [];
         };
 
-        mediaRecorder.start(1000);
+
       })
       .catch(err => {
         console.error("Erro ao acessar câmera:", err);
         alert("Erro ao acessar câmera. Verifique se você permitiu o acesso à câmera e se seu dispositivo possui uma câmera funcionando.");
-      });
+  
 
     function tirarFoto() {
       const canvas = document.createElement("canvas");
@@ -156,7 +156,7 @@
         btnGravar.classList.remove('recording');
         isRecording = false;
       }
-    });
+
   </script>
 </body>
 </html>
