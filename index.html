@@ -56,6 +56,10 @@
     .btn:hover {
       background-color: #0056b3;
     }
+
+    .btn.recording {
+      background-color: #dc3545;
+    }
   </style>
 </head>
 <body>
@@ -68,6 +72,10 @@
 
   <script>
     const video = document.getElementById("camera");
+    let mediaRecorder;
+    let recordedChunks = [];
+    let isRecording = false;
+    
     const constraints = {
       video: {
         facingMode: "environment",
@@ -81,8 +89,31 @@
       .then(stream => {
         video.srcObject = stream;
         window.localStream = stream;
+        video.setAttribute('playsinline', true);
+        video.style.transform = 'rotate(0deg)';
+
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ar-video-${Date.now()}.webm`;
+          a.click();
+          recordedChunks = [];
+        };
       })
-      .catch(err => alert("Erro ao acessar câmera: " + err));
+      .catch(err => {
+        console.error("Erro ao acessar câmera:", err);
+        alert("Erro ao acessar câmera. Verifique se você permitiu o acesso à câmera e se seu dispositivo possui uma câmera funcionando.");
+      });
 
     function tirarFoto() {
       const canvas = document.createElement("canvas");
@@ -94,28 +125,30 @@
 
       const link = document.createElement("a");
       link.href = imageUrl;
-      link.download = `foto-deck-ar.png`;
+      link.download = `foto-deck-ar-${Date.now()}.png`;
       link.click();
     }
 
-    function gravarVideo() {
-      const chunks = [];
-      const mediaRecorder = new MediaRecorder(window.localStream);
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    const recordBtn = document.getElementById('recordButton');
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const videoURL = URL.createObjectURL(blob);
-
-        const link = document.createElement('a');
-        link.href = videoURL;
-        link.download = `ar-video-${Date.now()}.webm`;
-        link.click();
-      };
-
-      mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 5000); // Grava 5 segundos
-    }
+    recordBtn.addEventListener('click', () => {
+      if (!isRecording) {
+        try {
+          mediaRecorder.start();
+          recordBtn.textContent = "⏹️ Parar Gravação";
+          recordBtn.classList.add('recording');
+          isRecording = true;
+        } catch (err) {
+          console.error("Erro ao iniciar gravação:", err);
+          alert("Erro ao iniciar gravação. Verifique se seu dispositivo suporta gravação de vídeo.");
+        }
+      } else {
+        mediaRecorder.stop();
+        recordBtn.textContent = "🎥 Gravar Vídeo";
+        recordBtn.classList.remove('recording');
+        isRecording = false;
+      }
+    });
   </script>
 </body>
 </html>
