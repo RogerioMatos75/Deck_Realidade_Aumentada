@@ -1,71 +1,61 @@
-// Importar a biblioteca QRCode
 const qrCodeContainer = document.getElementById('qrGrid');
-const characterForm = document.getElementById('characterForm');
+const characterForm = document.getElementById('qrForm');
+const fileManager = new FileManager();
 
-// Função para gerar QR code
-async function generateQRCode(character) {
+document.getElementById('qrForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    const deck = document.getElementById('deckName').value.trim().replace(/\s+/g, '-').toLowerCase();
+    const character = document.getElementById('characterName').value.trim().replace(/\s+/g, '-').toLowerCase();
+    const fileInput = document.getElementById('glbUpload');
+
+    if (!fileInput.files.length) {
+        alert('Por favor, selecione um arquivo .glb');
+        return;
+    }
+
+    formData.append('file', fileInput.files[0]);
+    formData.append('characterName', character);
+    formData.append('deckName', deck);
+
     try {
-        // Criar elemento para o QR code
-        const qrItem = document.createElement('div');
-        qrItem.className = 'qr-item';
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
 
-        // Gerar QR code usando a biblioteca qrcode.js
-        const qrCanvas = document.createElement('canvas');
-        await QRCode.toCanvas(qrCanvas, character.url, {
-            errorCorrectionLevel: 'H',
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao fazer upload');
+        }
+
+        // Gerar QR Code na interface
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = '';
+        await QRCode.toCanvas(qrContainer, data.glbUrl, {
+            width: 300,
             margin: 1,
-            width: 200,
             color: {
                 dark: '#000000',
                 light: '#ffffff'
             }
         });
 
-        // Adicionar QR code à interface
-        qrItem.appendChild(qrCanvas);
+        // Configurar link de download
+        const downloadLink = document.getElementById('downloadLink');
+        downloadLink.href = data.qrCodePath;
+        downloadLink.style.display = 'block';
 
-        // Adicionar nome do personagem
-        const characterName = document.createElement('p');
-        characterName.textContent = character.name;
-        qrItem.appendChild(characterName);
-
-        // Botão de download
-        const downloadBtn = document.createElement('a');
-        downloadBtn.className = 'download-btn';
-        downloadBtn.textContent = 'Download QR Code';
-        downloadBtn.href = qrCanvas.toDataURL('image/png');
-        downloadBtn.download = `qr-${character.name}.png`;
-        qrItem.appendChild(downloadBtn);
-
-        // Adicionar à grid
-        qrCodeContainer.appendChild(qrItem);
-
-        return true;
-    } catch (err) {
-        console.error(`Erro ao gerar QR code para ${character.name}:`, err);
-        return false;
-    }
-}
-
-// Manipular envio do formulário
-characterForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const characterData = {
-        name: document.getElementById('characterName').value,
-        url: document.getElementById('characterUrl').value,
-        model: document.getElementById('modelFile').files[0]
-    };
-
-    if (await generateQRCode(characterData)) {
-        // Limpar formulário após sucesso
-        characterForm.reset();
-    } else {
-        alert('Erro ao gerar QR Code. Por favor, tente novamente.');
+        alert('QR Code gerado com sucesso!');
+    } catch (error) {
+        console.error('Erro:', error);
+        alert('Erro ao processar o arquivo: ' + error.message);
     }
 });
 
 // Carregar QR codes existentes ao iniciar
 document.addEventListener('DOMContentLoaded', () => {
-    // Aqui você pode carregar QR codes existentes se necessário
+    // Implementar carregamento de QR codes existentes se necessário
 });
