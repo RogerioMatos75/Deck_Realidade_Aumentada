@@ -9,7 +9,9 @@ let isRecording = false;
 // Função para capturar foto
 async function capturePhoto() {
     const sceneEl = document.querySelector('a-scene');
-    const data = sceneEl.components.screenshot.getCanvas('perspective').toDataURL('image/png');
+    await sceneEl.components.screenshot.capture('perspective');
+    const canvas = sceneEl.components.screenshot.getCanvas('perspective');
+    const data = canvas.toDataURL('image/png');
     
     // Criar link para download
     const link = document.createElement('a');
