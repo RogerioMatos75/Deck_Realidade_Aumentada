@@ -83,6 +83,24 @@
         window.localStream = stream;
         video.setAttribute('playsinline', true);
         video.style.transform = 'rotate(0deg)';
+
+        mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `ar-video-${Date.now()}.webm`;
+          a.click();
+          recordedChunks = [];
+        };
       })
       .catch(err => alert("Erro ao acessar câmera: " + err));
 
@@ -100,23 +118,24 @@
       link.click();
     }
 
-    function gravarVideo() {
-      const chunks = [];
-      const mediaRecorder = new MediaRecorder(window.localStream);
-      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+    let mediaRecorder;
+    let recordedChunks = [];
+    let isRecording = false;
 
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const videoURL = URL.createObjectURL(blob);
+    const recordBtn = document.getElementById('recordButton');
 
-        const link = document.createElement('a');
-        link.href = videoURL;
-        link.download = `ar-video-${Date.now()}.webm`;
-        link.click();
-      };
+    recordBtn.addEventListener('click', () => {
+      if (!isRecording) {
+        mediaRecorder.start();
+        recordBtn.classList.add('recording');
+        isRecording = true;
+      } else {
+        mediaRecorder.stop();
+        recordBtn.classList.remove('recording');
+        isRecording = false;
+      }
+    });
 
-      mediaRecorder.start();
-     
     }
   </script>
 </body>
