@@ -4,8 +4,9 @@ const fs = require('fs');
 
 // Lista de personagens e suas URLs
 const characters = [
-    { name: 'mickey', url: 'https://deckar.com/p/mickey' },
-    { name: 'minnie', url: 'https://deckar.com/p/minnie' }
+    { name: 'chaves', url: 'https://deck-ar.vercel.app/p/chaves.html' },
+    { name: 'quico', url: 'https://deck-ar.vercel.app/p/quico.html' },
+    { name: 'chiquinha', url: 'https://deck-ar.vercel.app/p/chiquinha.html' }
 ];
 
 // Função para gerar QR code para um personagem
