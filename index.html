@@ -63,7 +63,7 @@
 
   <div class="controls">
     <button class="btn" onclick="tirarFoto()">📸 Tirar Foto</button>
-    <button id="recordButton" class="btn">🎥 Gravar Vídeo</button>
+    <button class="btn" onclick="gravarVideo()">🎥 Gravar Vídeo</button>
   </div>
 
   <script>
@@ -81,26 +81,6 @@
       .then(stream => {
         video.srcObject = stream;
         window.localStream = stream;
-        video.setAttribute('playsinline', true);
-        video.style.transform = 'rotate(0deg)';
-
-        mediaRecorder = new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `ar-video-${Date.now()}.webm`;
-          a.click();
-          recordedChunks = [];
-        };
       })
       .catch(err => alert("Erro ao acessar câmera: " + err));
 
@@ -118,67 +98,24 @@
       link.click();
     }
 
-    let mediaRecorder;
-    let recordedChunks = [];
-    let isRecording = false;
+    function gravarVideo() {
+      const chunks = [];
+      const mediaRecorder = new MediaRecorder(window.localStream);
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
 
-    const recordBtn = document.getElementById('recordButton');
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const videoURL = URL.createObjectURL(blob);
 
-    recordBtn.addEventListener('click', () => {
-      if (!isRecording) {
-        mediaRecorder.start();
-        recordBtn.classList.add('recording');
-        isRecording = true;
-      } else {
-        mediaRecorder.stop();
-        recordBtn.classList.remove('recording');
-        isRecording = false;
-      }
-    });
+        const link = document.createElement('a');
+        link.href = videoURL;
+        link.download = `ar-video-${Date.now()}.webm`;
+        link.click();
+      };
 
+      mediaRecorder.start();
+      setTimeout(() => mediaRecorder.stop(), 5000); // Grava 5 segundos
     }
   </script>
 </body>
 </html>
-
-let mediaRecorder;
-let recordedChunks = [];
-let isRecording = false;
-
-const recordBtn = document.getElementById('recordButton');
-
-recordBtn.addEventListener('click', () => {
-  if (!isRecording) {
-    mediaRecorder.start();
-    recordBtn.classList.add('recording');
-    isRecording = true;
-  } else {
-    mediaRecorder.stop();
-    recordBtn.classList.remove('recording');
-    isRecording = false;
-  }
-});
-
-navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-  .then(stream => {
-    video.srcObject = stream;
-    video.play();
-
-    mediaRecorder = new MediaRecorder(stream);
-
-    mediaRecorder.ondataavailable = event => {
-      if (event.data.size > 0) {
-        recordedChunks.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      const blob = new Blob(recordedChunks, { type: 'video/webm' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `ar-video-${Date.now()}.webm`;
-      a.click();
-      recordedChunks = [];
-    };
-  });
