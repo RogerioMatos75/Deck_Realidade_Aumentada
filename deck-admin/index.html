@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deck-AR QR Code Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #333;
+    }
+    .form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+    input[type="text"], input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 10px;
+      background-color: #1976D2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #qrcode-container {
+      margin-top: 20px;
+      display: none;
+      text-align: center;
+    }
+    .qr-box {
+      background: #fff;
+      padding: 20px;
+      border: 2px dashed #1976D2;
+      border-radius: 12px;
+      display: inline-block;
+    }
+    .download-link {
+      display: inline-block;
+      margin-top: 10px;
+      background: #4CAF50;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Deck-AR - Gerador de QR Code</h1>
+  <form class="form" id="qrForm">
+    <label for="deckName">Nome do Deck:</label>
+    <input type="text" id="deckName" placeholder="Ex: Turma do Chaves" required />
+
+    <label for="characterName">Nome do Personagem:</label>
+    <input type="text" id="characterName" placeholder="Ex: Chaves" required />
+
+    <label for="glbUpload">Upload do arquivo .glb:</label>
+    <input type="file" id="glbUpload" accept=".glb" required />
+
+    <button type="submit">Gerar QR Code</button>
+  </form>
+
+  <div id="qrcode-container">
+    <h3>QR Code para o personagem:</h3>
+    <div class="qr-box" id="qrcode"></div>
+    <a id="downloadLink" class="download-link" download>Baixar QR Code</a>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    document.getElementById('qrForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const deck = document.getElementById('deckName').value.trim().replace(/\s+/g, '-').toLowerCase();
+      const character = document.getElementById('characterName').value.trim().replace(/\s+/g, '-').toLowerCase();
+      const fileInput = document.getElementById('glbUpload');
+
+      if (!fileInput.files.length) return alert('Por favor, envie o arquivo .glb.');
+
+      const url = `https://deck-ar.vercel.app/p/${character}.html`;
+      const qrCanvas = document.getElementById('qrcode');
+      const container = document.getElementById('qrcode-container');
+
+      container.style.display = 'block';
+      qrCanvas.innerHTML = '';
+
+      QRCode.toCanvas(document.createElement('canvas'), url, {
+        errorCorrectionLevel: 'H',
+        margin: 2,
+        width: 250,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      }, function (err, canvas) {
+        if (err) console.error(err);
+        qrCanvas.appendChild(canvas);
+
+        const downloadLink = document.getElementById('downloadLink');
+        downloadLink.href = canvas.toDataURL('image/png');
+        downloadLink.download = `qr-${character}.png`;
+        downloadLink.style.display = 'inline-block';
+      });
+    });
+  </script>
+</body>
+</html>

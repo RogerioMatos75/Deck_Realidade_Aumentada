@@ -78,7 +78,12 @@
     let isRecording = false;
 
     // Acesso à câmera
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+    navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" } // Tenta usar a câmera traseira
+      },
+      audio: false
+    })
       .then(stream => {
         video.srcObject = stream;
         mediaRecorder = new MediaRecorder(stream);
