@@ -81,6 +81,8 @@
       .then(stream => {
         video.srcObject = stream;
         window.localStream = stream;
+        video.setAttribute('playsinline', true);
+        video.style.transform = 'rotate(0deg)';
       })
       .catch(err => alert("Erro ao acessar câmera: " + err));
 
@@ -114,7 +116,7 @@
       };
 
       mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 5000); // Grava 5 segundos
+     
     }
   </script>
 </body>
