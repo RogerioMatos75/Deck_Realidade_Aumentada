@@ -6,6 +6,16 @@ let mediaRecorder;
 let recordedChunks = [];
 let isRecording = false;
 
+// Configurações de vídeo HD em formato retrato (9:16)
+const videoConstraints = {
+    video: {
+        width: { ideal: 1080 },
+        height: { ideal: 1920 },
+        aspectRatio: 9/16,
+        facingMode: 'environment'
+    }
+};
+
 // Função para capturar foto
 async function capturePhoto() {
     try {
@@ -15,9 +25,14 @@ async function capturePhoto() {
             return;
         }
 
-        await sceneEl.components.screenshot.capture('perspective');
-        const canvas = sceneEl.components.screenshot.getCanvas('perspective');
-        const data = canvas.toDataURL('image/png');
+        // Usando html2canvas para capturar a tela inteira incluindo elementos AR
+        const canvas = await html2canvas(sceneEl, {
+            useCORS: true,
+            allowTaint: true,
+            scale: 2, // Aumenta a qualidade
+            backgroundColor: null
+        });
+        const data = canvas.toDataURL('image/png', 1.0);
         
         // Criar link para download
         const link = document.createElement('a');
@@ -41,7 +56,8 @@ async function toggleVideoRecording() {
             return;
         }
 
-        const stream = sceneEl.canvas.captureStream();
+        // Configurar stream com qualidade HD
+const stream = sceneEl.canvas.captureStream(60); // 60fps para melhor qualidade
         
         if (!isRecording) {
             recordedChunks = [];
