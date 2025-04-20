@@ -1,61 +1,87 @@
-const qrCodeContainer = document.getElementById('qrGrid');
-const characterForm = document.getElementById('qrForm');
-const fileManager = new FileManager();
+document.addEventListener('DOMContentLoaded', () => {
+    const fileManager = new FileManager();
+    const qrForm = document.getElementById('qrForm');
+    const qrCodeContainer = document.getElementById('qrGrid');
 
-document.getElementById('qrForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+    qrForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const formData = new FormData();
-    const deck = document.getElementById('deckName').value.trim().replace(/\s+/g, '-').toLowerCase();
-    const character = document.getElementById('characterName').value.trim().replace(/\s+/g, '-').toLowerCase();
-    const fileInput = document.getElementById('glbUpload');
+        const deckName = document.getElementById('deckName').value.trim();
+        const characterName = document.getElementById('characterName').value.trim();
+        const fileInput = document.getElementById('modelFile');
 
-    if (!fileInput.files.length) {
-        alert('Por favor, selecione um arquivo .glb');
-        return;
-    }
-
-    formData.append('file', fileInput.files[0]);
-    formData.append('characterName', character);
-    formData.append('deckName', deck);
-
-    try {
-        const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Erro ao fazer upload');
+        if (!fileInput.files.length) {
+            alert('Por favor, selecione um arquivo .glb');
+            return;
         }
 
-        // Gerar QR Code na interface
-        const qrContainer = document.getElementById('qrcode');
-        qrContainer.innerHTML = '';
-        await QRCode.toCanvas(qrContainer, data.glbUrl, {
-            width: 300,
-            margin: 1,
-            color: {
-                dark: '#000000',
-                light: '#ffffff'
+        const file = fileInput.files[0];
+        if (!file.name.toLowerCase().endsWith('.glb')) {
+            alert('Por favor, selecione um arquivo .glb válido');
+            return;
+        }
+
+        try {
+            // Upload do arquivo GLB para a pasta models
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('deckName', deckName.replace(/\s+/g, '-').toLowerCase());
+            formData.append('characterName', characterName.replace(/\s+/g, '-').toLowerCase());
+
+            const uploadResult = await fileManager.uploadGLB(file, deckName, characterName);
+            if (!uploadResult.success) {
+                throw new Error('Erro ao fazer upload do arquivo');
             }
-        });
 
-        // Configurar link de download
-        const downloadLink = document.getElementById('downloadLink');
-        downloadLink.href = data.qrCodePath;
-        downloadLink.style.display = 'block';
+            // Gerar QR Code com a URL do modelo
+            const qrCodeDataUrl = await fileManager.generateQRCode(uploadResult.glbUrl);
 
-        alert('QR Code gerado com sucesso!');
-    } catch (error) {
-        console.error('Erro:', error);
-        alert('Erro ao processar o arquivo: ' + error.message);
-    }
-});
+            // Criar elemento para o QR Code
+            const qrDiv = document.createElement('div');
+            qrDiv.className = 'qr-item';
+            
+            // Gerar QR Code
+            const qrCanvas = document.createElement('canvas');
+            await QRCode.toCanvas(qrCanvas, uploadResult.glbUrl, {
+                width: 200,
+                margin: 1,
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                }
+            });
 
-// Carregar QR codes existentes ao iniciar
-document.addEventListener('DOMContentLoaded', () => {
-    // Implementar carregamento de QR codes existentes se necessário
+            // Salvar QR Code como imagem
+            const qrImageUrl = qrCanvas.toDataURL('image/png');
+
+            // Adicionar informações do personagem
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'qr-info';
+            infoDiv.innerHTML = `
+                <p>Deck: ${deckName}</p>
+                <p>Personagem: ${characterName}</p>
+            `;
+
+            // Botão de download
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = qrCanvas.toDataURL('image/png');
+            downloadBtn.download = `qr-${characterName.toLowerCase()}.png`;
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = 'Baixar QR Code';
+
+            // Montar o elemento completo
+            qrDiv.appendChild(qrCanvas);
+            qrDiv.appendChild(infoDiv);
+            qrDiv.appendChild(downloadBtn);
+            qrCodeContainer.appendChild(qrDiv);
+
+            // Limpar o formulário
+            qrForm.reset();
+
+            alert('QR Code gerado com sucesso!');
+        } catch (error) {
+            console.error('Erro:', error);
+            alert(error.message);
+        }
+    });
 });

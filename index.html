@@ -69,69 +69,7 @@
   </div>
 
   <script>
-    const video = document.querySelector('video');
-    const photoBtn = document.getElementById('photoButton');
-    const recordBtn = document.getElementById('recordButton');
-
-    let mediaRecorder;
-    let recordedChunks = [];
-    let isRecording = false;
-
-    // Acesso à câmera
-    navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: "environment" } // Tenta usar a câmera traseira
-      },
-      audio: false
-    })
-      .then(stream => {
-        video.srcObject = stream;
-        mediaRecorder = new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            recordedChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunks, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `ar-video-${Date.now()}.webm`;
-          a.click();
-          recordedChunks = [];
-        };
-      })
-      .catch(error => {
-        console.error('Erro ao acessar a câmera:', error);
-      });
-
-    // Captura de foto
-    photoBtn.addEventListener('click', () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvas.getContext('2d').drawImage(video, 0, 0);
-      const link = document.createElement('a');
-      link.href = canvas.toDataURL('image/png');
-      link.download = `ar-photo-${Date.now()}.png`;
-      link.click();
-    });
-
-    // Gravação manual
-    recordBtn.addEventListener('click', () => {
-      if (!isRecording) {
-        mediaRecorder.start();
-        recordBtn.classList.add('recording');
-        isRecording = true;
-      } else {
-        mediaRecorder.stop();
-        recordBtn.classList.remove('recording');
-        isRecording = false;
-      }
-    });
-  </script>
+    window.location.href = '/pages/gerar.html';
+</script>
 </body>
 </html>

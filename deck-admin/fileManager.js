@@ -1,17 +1,18 @@
 class FileManager {
     constructor() {
-        this.baseAssetsPath = '/assets';
-        this.baseMarkerPath = '/marker';
+        this.baseAssetsPath = '/public/assets';
+        this.baseMarkerPath = '/public/marker';
+        this.baseUrl = 'https://deck-ar.vercel.app';
     }
 
     async uploadGLB(file, deckName, characterName) {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('deckName', deckName);
-            formData.append('characterName', characterName);
+            formData.append('deck', deckName);
+            formData.append('personagem', characterName);
 
-            const response = await fetch('/api/upload', {
+            const response = await fetch('/pages/api/upload', {
                 method: 'POST',
                 body: formData
             });
@@ -50,10 +51,14 @@ class FileManager {
     }
 
     getGlbUrl(deckName, characterName) {
-        return `${this.baseAssetsPath}/${deckName}/${characterName}.glb`;
+        return `${this.baseUrl}${this.baseAssetsPath}/${deckName}/${characterName}.glb`;
     }
 
     getQrCodePath(deckName, characterName) {
-        return `${this.baseMarkerPath}/${deckName}/${characterName}.png`;
+        return `${this.baseUrl}${this.baseMarkerPath}/${deckName}/${characterName}.png`;
+    }
+
+    getCharacterUrl(characterName) {
+        return `${this.baseUrl}/p/${characterName}.html`;
     }
 }
