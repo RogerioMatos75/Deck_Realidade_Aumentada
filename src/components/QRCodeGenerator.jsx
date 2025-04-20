@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import QRCode from 'qrcode.react';
 
 const QRCodeGenerator = () => {
   const [file, setFile] = useState(null);
   const [qrUrl, setQrUrl] = useState('');
   const [downloadPath, setDownloadPath] = useState('');
+  const canvasRef = useRef(null);
+  const qrRef = useRef(null);
 
   const handleFileUpload = async (event) => {
     const uploadedFile = event.target.files[0];
@@ -24,8 +26,76 @@ const QRCodeGenerator = () => {
     setDownloadPath(event.target.value);
   };
 
+  const generateMarker = (ctx, width, height) => {
+    ctx.fillStyle = '#000000';
+    
+    // Gerar padrões aleatórios nos cantos
+    const cornerSize = width * 0.2;
+    
+    // Canto superior esquerdo
+    for(let i = 0; i < 5; i++) {
+      const x = Math.random() * cornerSize;
+      const y = Math.random() * cornerSize;
+      const size = 10 + Math.random() * 20;
+      ctx.fillRect(x, y, size, size);
+    }
+    
+    // Canto superior direito
+    for(let i = 0; i < 5; i++) {
+      const x = width - (Math.random() * cornerSize) - 20;
+      const y = Math.random() * cornerSize;
+      const size = 10 + Math.random() * 20;
+      ctx.fillRect(x, y, size, size);
+    }
+    
+    // Canto inferior esquerdo
+    for(let i = 0; i < 5; i++) {
+      const x = Math.random() * cornerSize;
+      const y = height - (Math.random() * cornerSize) - 20;
+      const size = 10 + Math.random() * 20;
+      ctx.fillRect(x, y, size, size);
+    }
+    
+    // Canto inferior direito
+    for(let i = 0; i < 5; i++) {
+      const x = width - (Math.random() * cornerSize) - 20;
+      const y = height - (Math.random() * cornerSize) - 20;
+      const size = 10 + Math.random() * 20;
+      ctx.fillRect(x, y, size, size);
+    }
+  };
+
+  useEffect(() => {
+    if (qrUrl && canvasRef.current && qrRef.current) {
+      const canvas = canvasRef.current;
+      const qrCanvas = qrRef.current.querySelector('canvas');
+      
+      if (qrCanvas) {
+        const ctx = canvas.getContext('2d');
+        const width = 400;
+        const height = 400;
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Limpar canvas
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Gerar marcadores
+        generateMarker(ctx, width, height);
+        
+        // Desenhar QR code no centro
+        const qrSize = 256;
+        const x = (width - qrSize) / 2;
+        const y = (height - qrSize) / 2;
+        ctx.drawImage(qrCanvas, x, y);
+      }
+    }
+  }, [qrUrl]);
+
   const handleSaveQRCode = () => {
-    const canvas = document.querySelector('canvas');
+    const canvas = canvasRef.current;
     if (canvas) {
       const pngUrl = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
@@ -52,8 +122,13 @@ const QRCodeGenerator = () => {
 
       {qrUrl && (
         <div className="qr-section">
-          <QRCode value={qrUrl} size={256} />
-          
+          <div ref={qrRef} style={{ display: 'none' }}>
+            <QRCode value={qrUrl} size={256} />
+          </div>
+          <canvas
+            ref={canvasRef}
+            style={{ border: '1px solid #ccc', borderRadius: '4px' }}
+          />
           <div className="save-section">
             <input
               type="text"
