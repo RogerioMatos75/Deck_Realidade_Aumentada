@@ -13,7 +13,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './pages/index.html',
-        admin: './deck-admin/index.html'
+        admin: './deck-admin/index.html',
+        gerar: './pages/gerar.html'
       }
     }
   }

@@ -21,15 +21,26 @@ class FileManager {
         }
     }
 
-    async saveGLBFile(file, characterName) {
-        const fileName = `${characterName}.glb`;
-        const filePath = path.join(this.assetsDir, fileName);
-        
+    async uploadFile(file, characterName) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('personagem', characterName);
+
         try {
-            await fs.promises.writeFile(filePath, file);
-            return fileName;
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Erro ao fazer upload do arquivo');
+            }
+
+            const data = await response.json();
+            return data.url; // retorna o path salvo
         } catch (error) {
-            console.error('Erro ao salvar arquivo GLB:', error);
+            console.error('Erro no upload:', error);
             throw error;
         }
     }
