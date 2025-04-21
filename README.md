@@ -1,24 +1,19 @@
 # Projeto Deck de Realidade Aumentada
 
-Este projeto utiliza Next.js para criar uma aplicação de realidade aumentada com upload de modelos 3D e geração de QR Codes.
+Este projeto utiliza Next.js para criar uma aplicação de realidade aumentada com upload de modelos 3D e geração de QR Codes, integrado com Supabase para armazenamento e Vercel para deploy.
 
 ## Estrutura do Projeto
 
 ```
 Deck_Realidade_Aumentada/
 ├── public/
-│   ├── assets/                # Onde os arquivos .glb e QR Codes serão armazenados
-│   │   ├── TurmaDoChaves/
-│   │   │   ├── chaves.glb
-│   │   │   ├── qr-chaves.png
-│   │   └── ...
-│   └── placeholder.png        # Imagem padrão, se quiser
+│   └── placeholder.png        # Imagem padrão para previews
 │
 ├── pages/
 │   ├── index.js               # Página principal com formulário e upload
 │   ├── api/
-│   │   ├── upload.js          # Lida com uploads dos arquivos .glb
-│   │   ├── generate.js        # Gera o QR Code e cria estrutura de pastas
+│   │   ├── upload.js          # Gerencia uploads para o Supabase
+│   │   ├── generate.js        # Gera QR Codes e URLs
 │
 ├── components/
 │   ├── UploadForm.js          # Componente do formulário
@@ -28,10 +23,10 @@ Deck_Realidade_Aumentada/
 │   └── globals.css
 │
 ├── utils/
-│   ├── fileManager.js         # Funções auxiliares para salvar arquivos e gerar URLs
-│   ├── qrGenerator.js         # Geração de QR Code usando a lib `qrcode`
+│   ├── supabase.js            # Cliente e funções do Supabase
+│   ├── qrGenerator.js         # Geração de QR Code
 │
-├── .gitignore
+├── .env.local                 # Variáveis de ambiente (não versionado)
 ├── next.config.js
 ├── package.json
 └── README.md
@@ -39,11 +34,37 @@ Deck_Realidade_Aumentada/
 
 ## Configuração
 
-1. Instale as dependências com `npm install`.
-2. Inicie o servidor de desenvolvimento com `npm run dev`.
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
+2. Configure as variáveis de ambiente no arquivo `.env.local`:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anon_do_supabase
+   ```
+3. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+## Deploy
+
+1. Configure um novo projeto no Vercel
+2. Configure as variáveis de ambiente no Vercel
+3. Faça o deploy da aplicação
 
 ## Funcionalidades
 
-- Upload de modelos 3D no formato .glb.
-- Geração de QR Codes para visualização dos modelos.
-- Estrutura de pastas organizada para fácil manutenção.
+- Upload de modelos 3D (.glb) diretamente para o Supabase Storage
+- Geração automática de URLs públicas para os modelos
+- Geração de QR Codes vinculados às URLs dos modelos
+- Interface intuitiva para gerenciamento de modelos
+- Deploy contínuo via Vercel
+
+## Tecnologias
+
+- Next.js - Framework React
+- Supabase - Backend e Storage
+- Vercel - Hosting e Deploy
+- QR Code Generator - Geração de QR Codes
