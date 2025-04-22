@@ -6,30 +6,23 @@ Este projeto utiliza Next.js para criar uma aplicação de realidade aumentada c
 
 ```
 Deck_Realidade_Aumentada/
-├── public/
-│   └── placeholder.png        # Imagem padrão para previews
-│
-├── pages/
-│   ├── index.js               # Página principal com formulário e upload
-│   ├── api/
-│   │   ├── upload.js          # Gerencia uploads para o Supabase
-│   │   ├── generate.js        # Gera QR Codes e URLs
-│
-├── components/
-│   ├── UploadForm.js          # Componente do formulário
-│   ├── QRPreview.js           # Componente de visualização do QR Code
-│
-├── styles/
-│   └── globals.css
-│
-├── utils/
-│   ├── supabase.js            # Cliente e funções do Supabase
-│   ├── qrGenerator.js         # Geração de QR Code
-│
-├── .env.local                 # Variáveis de ambiente (não versionado)
-├── next.config.js
-├── package.json
-└── README.md
+├── deck-ar/                 # Frontend para visualização em AR
+│   ├── public/              # Arquivos estáticos (imagens, modelos 3D, etc.)
+│   ├── pages/               # Páginas da aplicação (Next.js)
+│   ├── components/          # Componentes reutilizáveis
+│   ├── styles/              # Arquivos de estilo (CSS, SCSS)
+│   └── package.json         # Dependências e scripts do projeto
+├── deck-admin/              # Backend/Admin para gerenciamento
+│   ├── public/              # Arquivos estáticos
+│   ├── pages/               # Páginas da aplicação (Next.js)
+│   ├── components/          # Componentes reutilizáveis
+│   ├── styles/              # Arquivos de estilo
+│   ├── lib/                 # Bibliotecas e utilitários (ex: Supabase)
+│   ├── services/            # Serviços (ex: upload de arquivos)
+│   └── package.json         # Dependências e scripts do projeto
+├── .gitignore               # Arquivos e pastas a serem ignorados pelo Git
+└── README.md                # Documentação do projeto
+
 ```
 
 ## Configuração
@@ -68,3 +61,23 @@ Deck_Realidade_Aumentada/
 - Supabase - Backend e Storage
 - Vercel - Hosting e Deploy
 - QR Code Generator - Geração de QR Codes
+
+
+## Entendendo o Projeto Deck-AR
+O Deck-AR é uma aplicação que permite aos usuários visualizar modelos 3D em realidade aumentada. Ele foi desenvolvido utilizando tecnologias como Next.js, Supabase e Vercel. A aplicação possui duas partes principais: o Deck-AR (Visualizador) e o Deck-Admin (Painel Administrativo).
+
+## Deck-AR (Visualizador)
+- Função : Acionar a câmera e fazer a leitura de QR codes para exibir objetos 3D com marcadores
+- Tecnologia : Utiliza A-Frame e AR.js para renderizar os modelos 3D em realidade aumentada
+- Fluxo : O usuário escaneia um QR code com a câmera, que carrega o modelo 3D correspondente
+## Deck-Admin (Painel Administrativo)
+- Função : Interface administrativa para gerenciar os modelos 3D
+- Recursos :
+  - Formulário para input do nome do Deck e nome do arquivo
+  - Upload de arquivos .glb (modelos 3D)
+  - Geração de URL para o modelo
+  - Geração de QR code vinculado à URL
+  - Exibição do QR code na interface
+  - Botão para salvar o QR code no diretório
+- 
+## Estrutura Atual do Projeto
