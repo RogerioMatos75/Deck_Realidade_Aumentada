@@ -47,7 +47,7 @@ export class FileManager {
       console.error('Erro no upload:', error)
       throw error
     }
-  }
+}
 
   async generateQRCode(characterName) {
     const url = this.getCharacterUrl(characterName)
