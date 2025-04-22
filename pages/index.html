@@ -1,10 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Deck AR - Visualizador</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deck AR - Personagens</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+
         .arjs-loader {
             height: 100%;
             width: 100%;
@@ -17,9 +26,51 @@
             justify-content: center;
             align-items: center;
         }
+
         .arjs-loader div {
             text-align: center;
             font-size: 1.25em;
+            color: white;
+        }
+
+        .ar-controls {
+            position: fixed;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 1000;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            backdrop-filter: blur(6px);
+        }
+
+        .ar-button {
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .ar-button:hover {
+            background: #1976D2;
+            color: white;
+        }
+
+        .recording {
+            background: #f44336 !important;
             color: white;
         }
     </style>
@@ -27,6 +78,11 @@
 <body style="margin: 0; overflow: hidden;">
     <div class="arjs-loader">
         <div>Carregando, por favor aguarde...</div>
+    </div>
+
+    <div class="ar-controls">
+        <button id="photoButton" class="ar-button">📷</button>
+        <button id="recordButton" class="ar-button">🎥</button>
     </div>
 
     <a-scene
@@ -55,5 +111,65 @@
 
         <a-entity camera></a-entity>
     </a-scene>
+
+    <script>
+        const photoBtn = document.getElementById('photoButton');
+        const recordBtn = document.getElementById('recordButton');
+
+        let mediaRecorder;
+        let recordedChunks = [];
+        let isRecording = false;
+
+        // Captura de foto
+        photoBtn.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            const video = document.querySelector('video');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `ar-photo-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Gravação manual
+        recordBtn.addEventListener('click', () => {
+            if (!mediaRecorder) {
+                const stream = document.querySelector('video').srcObject;
+                mediaRecorder = new MediaRecorder(stream);
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ar-video-${Date.now()}.webm`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    recordedChunks = [];
+                };
+            }
+
+            if (!isRecording) {
+                mediaRecorder.start();
+                recordBtn.classList.add('recording');
+                isRecording = true;
+            } else {
+                mediaRecorder.stop();
+                recordBtn.classList.remove('recording');
+                isRecording = false;
+            }
+        });
+    </script>
 </body>
 </html>
